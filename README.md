@@ -13,7 +13,6 @@
 | Raw pixels + Kernel PCA | ~18% |
 | HOG + KRR + RBF | ~50% |
 | HOG + LBP + KRR + RBF | ~57% |
-| **HOG + LBP + Color + MKL-KRR + Augmentation** | **~70%** |
 
 ---
 
@@ -25,11 +24,11 @@ The pipeline has five main components:
 
 Three complementary feature groups are extracted from each image:
 
-- **HOG** (Histogram of Oriented Gradients) — encodes local edge orientations in 4×4 pixel cells with L2-Hys block normalisation. Robust to brightness variations. Computed on the full image and a 2×2 spatial pyramid. Also computed on **opponent color channels** (O1 = R−G, O2 = R+G−2B) to capture colour edges independently of luminance.
+- **HOG** (Histogram of Oriented Gradients) encodes local edge orientations in 4×4 pixel cells with L2-Hys block normalisation. Robust to brightness variations. Computed on the full image and a 2×2 spatial pyramid. Also computed on **opponent color channels** (O1 = R−G, O2 = R+G−2B) to capture colour edges independently of luminance.
 
-- **LBP** (Local Binary Patterns) — for each pixel, compares its intensity to 8 neighbours on a circle and builds a histogram of the resulting binary codes. Captures micro-texture (fur, feathers, scales) that HOG misses. Computed at two scales (radius=1 and radius=2) on the full image and a 2×2 spatial pyramid.
+- **LBP** (Local Binary Patterns) for each pixel, compares its intensity to 8 neighbours on a circle and builds a histogram of the resulting binary codes. Captures micro-texture (fur, feathers, scales) that HOG misses. Computed at two scales (radius=1 and radius=2) on the full image and a 2×2 spatial pyramid.
 
-- **Opponent colour histograms** — per-channel intensity histograms in the opponent colour space, which decorrelates colour from luminance. More discriminative than raw RGB histograms on pre-processed dark images.
+- **Opponent colour histograms**  per-channel intensity histograms in the opponent colour space, which decorrelates colour from luminance. More discriminative than raw RGB histograms on pre-processed dark images.
 
 Each group is normalised independently (zero mean, unit variance) fitted on the training set only.
 
@@ -125,7 +124,7 @@ rm -rf cache/
 
 ## Key Design Choices
 
-**Why not raw pixels?** The images are pre-processed and appear very dark. Pixel-level kernels are sensitive to absolute intensities and are not robust to shifts — two images of the same object slightly translated look completely different in pixel space.
+**Why not raw pixels?** The images are pre-processed and appear very dark. Pixel-level kernels are sensitive to absolute intensities and are not robust to shifts, two images of the same object slightly translated look completely different in pixel space.
 
 **Why separate kernels per feature group?** HOG, LBP, and colour histograms have very different dimensionalities and variances. A single γ cannot be simultaneously optimal for all three. MKL assigns each group its own γ computed as `1/(D·var)`.
 
